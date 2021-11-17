@@ -5,6 +5,13 @@ description = ""
 authors = ["Sriram Krishna <ksri91@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+homepage = "https://github.com/k-sriram/negargparse"
+repository = "https://github.com/k-sriram/negargparse"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"

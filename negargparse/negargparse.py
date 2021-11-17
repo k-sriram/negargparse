@@ -3,6 +3,13 @@
 from __future__ import annotations
 
 __version__ = "0.1.1"
+__all__ = [
+    "sentinelise_args",
+    "NegativeArgumentParser",
+    "NegInt",
+    "NegFloat",
+    "NegString",
+]
 
 import re as _re
 import sys as _sys

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+# Explicity stating version here so that module can be used independently.
+# Concurrency between this and package version is maintained using test and
+# commit hooks.
 __version__ = "0.1.2"
+
 __all__ = [
     "sentinelise_args",
     "NegativeArgumentParser",

@@ -17,14 +17,14 @@ classifiers = [
 python = "^3.10"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pytest = "^6.2.5" # Lowest: see https://github.com/pytest-dev/pytest/pull/8540
 flake8 = "^4.0.1"
 black = "^21.11b0"
 mypy = "^0.910"
 pre-commit = "^2.15.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.2.0a2"] # Lowest: was having problems with https://github.com/python-poetry/poetry/issues/2855
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]

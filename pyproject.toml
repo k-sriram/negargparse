@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "negargparse"
-version = "0.1.3"
+version = "0.1.3.post1"
 description = ""
 authors = ["Sriram Krishna <ksri91@gmail.com>"]
 license = "MIT"

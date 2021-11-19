@@ -3,12 +3,12 @@ name = "negargparse"
 version = "0.1.3"
 description = ""
 authors = ["Sriram Krishna <ksri91@gmail.com>"]
-license = "MIT-0"
+license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/k-sriram/negargparse"
 repository = "https://github.com/k-sriram/negargparse"
 classifiers = [
-    "License :: OSI Approved :: MIT No Attribution License (MIT-0)",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.10",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]

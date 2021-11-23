@@ -16,7 +16,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.10"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^6.2.5" # Lowest: see https://github.com/pytest-dev/pytest/pull/8540
 flake8 = "^4.0.1"
 black = "^21.11b0"

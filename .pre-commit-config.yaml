@@ -24,11 +24,6 @@ repos:
   - id: mypy
 - repo: local
   hooks:
-  - id: version
-    name: Ensure same package version in all modules
-    entry: ./.check_version
-    language: system
-    always_run: true
   - id: install
     name: installing package
     entry: poetry install

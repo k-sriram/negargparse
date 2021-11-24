@@ -81,8 +81,8 @@ class RegexEscaper:
 
 class NegativeArgumentParser(argparse.ArgumentParser):
     negargescaper: Escaper = RegexEscaper(
-        [(r"\A(\\*-\d)", "\\\1")],
-        [(r"\A\\(\\*-\d)", "\1")],
+        [(r"\A(\\*-\d)", r"\\\1")],
+        [(r"\A\\(\\*-\d)", r"\1")],
     )
 
     def parse_known_args(

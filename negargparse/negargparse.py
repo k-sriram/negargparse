@@ -64,7 +64,7 @@ class RegexEscaper:
     def _compileescapes(
         escapetemplate: list[tuple[str, str]],
     ) -> list[Callable[[str], str]]:
-        return [partial(_re.compile(et[0]).sub, sub=et[1]) for et in escapetemplate]
+        return [partial(_re.compile(et[0]).sub, et[1]) for et in escapetemplate]
 
     @staticmethod
     def _substitute(string: str, escapes: list[Callable[[str], str]]) -> str:

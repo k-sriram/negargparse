@@ -19,7 +19,7 @@ poetry install
 ```
 3. Install pre-commit hooks
 ```sh
-poetry run pre-commit
+poetry run pre-commit install
 ```
 
 Now whenever developing, enter virtual environment using

@@ -28,7 +28,7 @@ from __future__ import annotations
 # Explicity stating version here so that module can be used independently.
 # Concurrency between this and package version is maintained using test and
 # commit hooks.
-__version__ = "0.1.4"
+__version__ = "0.2.0.dev1"
 
 __all__ = [
     "NegativeArgumentParser",

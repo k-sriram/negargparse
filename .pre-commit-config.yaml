@@ -29,3 +29,16 @@ repos:
     entry: ./.check_version
     language: system
     always_run: true
+  - id: install
+    name: installing package
+    entry: poetry install
+    language: python
+    always_run: true
+    pass_filenames: false
+  - id: pytest
+    name: pytest
+    entry: pytest
+    language: python
+    always_run: true
+    pass_filenames: false
+    verbose: true

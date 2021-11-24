@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "negargparse"
-version = "0.1.4"
+version = "0.2.0.dev1"
 description = ""
 authors = ["Sriram Krishna <ksri91@gmail.com>"]
 license = "MIT"
@@ -28,8 +28,21 @@ requires = ["poetry-core>=1.2.0a2"] # Lowest: was having problems with https://g
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-exclude = "tests/*"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 warn_unused_ignores = true
 show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*"
+]
+disallow_untyped_defs = false
+
+
+[tool.pytest.ini_options]
+minversion = "6.2.5"
+xfail_strict = true
+testpaths = [
+    "tests"
+]

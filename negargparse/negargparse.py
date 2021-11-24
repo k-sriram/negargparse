@@ -42,7 +42,8 @@ import re as _re
 import sys as _sys
 
 import argparse
-from typing import Sequence, Type
+from functools import partial
+from typing import Callable, Protocol, Sequence, Type
 
 
 _negsentinel = "__minussign__"
@@ -55,6 +56,40 @@ def sentinelise_args(args: list[str], sentinel: str = _negsentinel) -> None:
     for i, arg in enumerate(args):
         if _negre.fullmatch(arg) is not None:
             args[i] = f"{sentinel}{arg[1:]}"
+
+
+class Escaper(Protocol):
+    def escape(self, string: str) -> str:
+        ...
+
+    def unescape(self, string: str) -> str:
+        ...
+
+
+class RegexEscaper:
+    def __init__(
+        self, escapes: list[tuple[str, str]], unescapes: list[tuple[str, str]]
+    ) -> None:
+        self.escapes = self._compileescapes(escapes)
+        self.unescapes = self._compileescapes(unescapes)
+
+    @staticmethod
+    def _compileescapes(
+        escapetemplate: list[tuple[str, str]],
+    ) -> list[Callable[[str], str]]:
+        return [partial(_re.compile(et[0]).sub, sub=et[1]) for et in escapetemplate]
+
+    @staticmethod
+    def _substitute(string: str, escapes: list[Callable[[str], str]]) -> str:
+        for escaper in escapes:
+            string = escaper(string)
+        return string
+
+    def escape(self, string: str) -> str:
+        return self._substitute(string, self.escapes)
+
+    def unescape(self, string: str) -> str:
+        return self._substitute(string, self.unescapes)
 
 
 class NegativeArgumentParser(argparse.ArgumentParser):

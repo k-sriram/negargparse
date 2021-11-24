@@ -31,7 +31,6 @@ from __future__ import annotations
 __version__ = "0.1.3.post1"
 
 __all__ = [
-    "sentinelise_args",
     "NegativeArgumentParser",
     "NegInt",
     "NegFloat",
@@ -44,18 +43,6 @@ import sys as _sys
 import argparse
 from functools import partial
 from typing import Callable, Protocol, Sequence, Type
-
-
-_negsentinel = "__minussign__"
-_negre = _re.compile(r"^-\d.*$")
-_sentre = _re.compile(f"^{_negsentinel}")
-_minus = r"-"
-
-
-def sentinelise_args(args: list[str], sentinel: str = _negsentinel) -> None:
-    for i, arg in enumerate(args):
-        if _negre.fullmatch(arg) is not None:
-            args[i] = f"{sentinel}{arg[1:]}"
 
 
 class Escaper(Protocol):
@@ -93,6 +80,11 @@ class RegexEscaper:
 
 
 class NegativeArgumentParser(argparse.ArgumentParser):
+    negargescaper: Escaper = RegexEscaper(
+        [(r"\A(\\*-\d)", "\\\1")],
+        [(r"\A\\(\\*-\d)", "\1")],
+    )
+
     def parse_known_args(
         self,
         args: Sequence[str] = None,
@@ -101,10 +93,7 @@ class NegativeArgumentParser(argparse.ArgumentParser):
         if args is None:
             # args default to the system args
             args = _sys.argv[1:]
-        else:
-            # make sure that args are mutable
-            args = list(args)
-        sentinelise_args(args)
+        args = [self.negargescaper.escape(arg) for arg in args]
         return super().parse_known_args(args, namespace)
 
 
@@ -114,17 +103,17 @@ class NegativeArgumentParser(argparse.ArgumentParser):
 
 class NegInt(int):
     def __new__(cls: Type[NegInt], arg: str) -> NegInt:
-        arg = _sentre.sub(_minus, arg, count=1)
+        arg = NegativeArgumentParser.negargescaper.unescape(arg)
         return super().__new__(cls, arg)
 
 
 class NegFloat(float):
     def __new__(cls: Type[NegFloat], arg: str) -> NegFloat:
-        arg = _sentre.sub(_minus, arg, count=1)
+        arg = NegativeArgumentParser.negargescaper.unescape(arg)
         return super().__new__(cls, arg)
 
 
 class NegString(str):
     def __new__(cls: Type[NegString], arg: str) -> NegString:
-        arg = _sentre.sub(_minus, arg, count=1)
+        arg = NegativeArgumentParser.negargescaper.unescape(arg)
         return super().__new__(cls, arg)

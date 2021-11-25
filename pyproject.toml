@@ -46,3 +46,11 @@ xfail_strict = true
 testpaths = [
     "tests"
 ]
+python_functions = [
+    "test_*",
+    "example_*",
+    "validate_*"
+]
+markers = [
+    "testvalid: validates tests"
+]

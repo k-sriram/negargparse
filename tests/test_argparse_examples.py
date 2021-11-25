@@ -76,6 +76,27 @@ compare_AP = partial(
 # ----------------------------------- Tests -----------------------------------
 
 
+# Test monkey patch
+
+
+@compare_AP(
+    dedent(
+        """\
+        usage: monkeypatch [-h]
+
+        options:
+          -h, --help  show this help message and exit
+        """
+    )
+)
+def test_monkeypatch_argv(AP, monkeypatch, capsys):
+    parser = AP(prog="monkeypatch")
+    monkeypatch.setattr("sys.argv", ["pytest", "-h"])
+    with pytest.raises(SystemExit):
+        parser.parse_args()
+    yield capsys.readouterr().out
+
+
 @compare_AP(
     4,
     10,

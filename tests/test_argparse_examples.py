@@ -4,76 +4,7 @@ from textwrap import dedent
 from functools import partial
 from inspect import isgenerator, signature
 import pytest
-from negargparse.negargparse import NegativeArgumentParser, NegInt
-
-
-@pytest.fixture
-def example_1_parser():
-    parser = NegativeArgumentParser(description="Process some integers.")
-    parser.add_argument(
-        "integers",
-        metavar="N",
-        type=int,
-        nargs="+",
-        help="an integer for the accumulator",
-    )
-    parser.add_argument(
-        "--sum",
-        dest="accumulate",
-        action="store_const",
-        const=sum,
-        default=max,
-        help="sum the integers (default: find the max)",
-    )
-    return parser
-
-
-@pytest.mark.parametrize(
-    "args, result",
-    [
-        (["1", "2", "3", "4"], 4),
-        (["1", "2", "3", "4", "--sum"], 10),
-    ],
-)
-def example_1(example_1_parser, args, result):
-    args = example_1_parser.parse_args(args)
-    assert args.accumulate(args.integers) == result
-
-
-def example_1_helpmsg(example_1_parser, capsys):
-    helpmsg = dedent(
-        """\
-        usage: prog.py [-h] [--sum] N [N ...]
-
-        Process some integers.
-
-        positional arguments:
-          N           an integer for the accumulator
-
-        options:
-          -h, --help  show this help message and exit
-          --sum       sum the integers (default: find the max)
-        """
-    )
-    example_1_parser.prog = "prog.py"
-    with pytest.raises(SystemExit):
-        example_1_parser.parse_args(["-h"])
-    capstd = capsys.readouterr()
-    assert capstd.out == helpmsg
-
-
-def example_1_invalid(example_1_parser, capsys):
-    usage = dedent(
-        """\
-        usage: prog.py [-h] [--sum] N [N ...]
-        prog.py: error: argument N: invalid int value: 'a'
-        """
-    )
-    example_1_parser.prog = "prog.py"
-    with pytest.raises(SystemExit):
-        example_1_parser.parse_args(["a", "b", "c"])
-    capstd = capsys.readouterr()
-    assert capstd.err == usage
+from negargparse import negargparse
 
 
 # ---------------- Comparison between argparse and negargparse ----------------
@@ -92,22 +23,24 @@ def compare_class_behavior(alias, class1, class2, *expected):
 
         # Inject validation code
         def validate_test(*args, **kwargs):
-            if len(expected) == 0:
-                pytest.fail("Expected values not provided")
-
-            isiter = len(expected) > 1
+            # Check if validation data is provided
+            assert len(expected) > 0
 
             # Test whether provided class is used
             with pytest.raises(TypeError):
                 valNone = func(*args, **kwargs, **{alias: None})
-                if isiter:
+                if isgenerator(valNone):
                     list(valNone)
 
             val1 = func(*args, **kwargs, **{alias: class1})
-            if isiter:
+            if isgenerator(val1):
+                val1 = list(val1)
+                # check if all expected values are provided
+                assert len(val1) == len(expected)
                 for item1, exp in zip(val1, expected):
                     assert item1 == exp
             else:
+                assert len(expected) == 1
                 assert val1 == expected[0]
 
         validate_test.__signature__ = sig
@@ -134,10 +67,70 @@ def compare_class_behavior(alias, class1, class2, *expected):
 
 
 compare_AP = partial(
-    compare_class_behavior, "AP", argparse.ArgumentParser, NegativeArgumentParser
+    compare_class_behavior,
+    "AP",
+    argparse.ArgumentParser,
+    negargparse.NegativeArgumentParser,
 )
 
 # ----------------------------------- Tests -----------------------------------
+
+
+@compare_AP(
+    4,
+    10,
+    dedent(
+        """\
+        usage: prog.py [-h] [--sum] N [N ...]
+
+        Process some integers.
+
+        positional arguments:
+          N           an integer for the accumulator
+
+        options:
+          -h, --help  show this help message and exit
+          --sum       sum the integers (default: find the max)
+        """
+    ),
+    dedent(
+        """\
+        usage: prog.py [-h] [--sum] N [N ...]
+        prog.py: error: argument N: invalid int value: 'a'
+        """
+    ),
+)
+def example_1(AP, capsys):
+    parser = AP(prog="prog.py", description="Process some integers.")
+    parser.add_argument(
+        "integers",
+        metavar="N",
+        type=int,
+        nargs="+",
+        help="an integer for the accumulator",
+    )
+    parser.add_argument(
+        "--sum",
+        dest="accumulate",
+        action="store_const",
+        const=sum,
+        default=max,
+        help="sum the integers (default: find the max)",
+    )
+
+    for inargs in (["1", "2", "3", "4"], ["1", "2", "3", "4", "--sum"]):
+        args = parser.parse_args(inargs)
+        yield args.accumulate(args.integers)
+
+    # helpmsg
+    with pytest.raises(SystemExit):
+        parser.parse_args(["-h"])
+    yield capsys.readouterr().out
+
+    # invalid
+    with pytest.raises(SystemExit):
+        parser.parse_args(["a", "b", "c"])
+    yield capsys.readouterr().err
 
 
 @compare_AP(
@@ -441,7 +434,7 @@ def example_add_help_3(AP, capsys):
 @compare_AP("Catching an argumentError\n")
 def example_exit_on_error(AP, capsys):
     parser = AP(exit_on_error=False)
-    parser.add_argument("--integers", type=NegInt)
+    parser.add_argument("--integers", type=int)
     try:
         parser.parse_args("--integers a".split())
     except argparse.ArgumentError:
@@ -1013,7 +1006,7 @@ def example_negarg_5_AP(negarg_parser_2_AP, capsys):
 
 @pytest.fixture(scope="module")
 def negarg_parser_1_NAP():
-    parser = NegativeArgumentParser(prog="PROG")
+    parser = negargparse.NegativeArgumentParser(prog="PROG")
     parser.add_argument("-x")
     parser.add_argument("foo", nargs="?")
     return parser
@@ -1033,7 +1026,7 @@ def example_negarg_2_NAP(negarg_parser_1_NAP):
 
 @pytest.fixture(scope="module")
 def negarg_parser_2_NAP():
-    parser = NegativeArgumentParser(prog="PROG")
+    parser = negargparse.NegativeArgumentParser(prog="PROG")
     parser.add_argument("-1", dest="one")
     parser.add_argument("foo", nargs="?")
     return parser

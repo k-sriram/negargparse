@@ -28,7 +28,7 @@ from __future__ import annotations
 # Explicity stating version here so that module can be used independently.
 # Concurrency between this and package version is maintained using test and
 # commit hooks.
-__version__ = "0.1.4"
+__version__ = "0.2.0.dev3"
 
 __all__ = [
     "NegativeArgumentParser",
@@ -64,7 +64,7 @@ class RegexEscaper:
     def _compileescapes(
         escapetemplate: list[tuple[str, str]],
     ) -> list[Callable[[str], str]]:
-        return [partial(_re.compile(et[0]).sub, sub=et[1]) for et in escapetemplate]
+        return [partial(_re.compile(et[0]).sub, et[1]) for et in escapetemplate]
 
     @staticmethod
     def _substitute(string: str, escapes: list[Callable[[str], str]]) -> str:
@@ -81,8 +81,8 @@ class RegexEscaper:
 
 class NegativeArgumentParser(argparse.ArgumentParser):
     negargescaper: Escaper = RegexEscaper(
-        [(r"\A(\\*-\d)", "\\\1")],
-        [(r"\A\\(\\*-\d)", "\1")],
+        [(r"\A(\\*-\d)", r"\\\1")],
+        [(r"\A\\(\\*-\d)", r"\1")],
     )
 
     def parse_known_args(

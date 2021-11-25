@@ -1004,6 +1004,11 @@ def example_negarg_5_AP(negarg_parser_2_AP, capsys):
     )
 
 
+@pytest.mark.testvalid
+def example_negarg_6_AP(negarg_parser_2_AP):
+    assert negarg_parser_2_AP.parse_args(["--", "-f"]) == Namespace(foo="-f", one=None)
+
+
 @pytest.fixture(scope="module")
 def negarg_parser_1_NAP():
     parser = negargparse.NegativeArgumentParser(prog="PROG")
@@ -1059,3 +1064,7 @@ def example_negarg_5_NAP(negarg_parser_2_NAP, capsys):
         PROG: error: argument -1: expected one argument
         """
     )
+
+
+def example_negarg_6_NAP(negarg_parser_2_NAP):
+    assert negarg_parser_2_NAP.parse_args(["--", "-f"]) == Namespace(foo="-f", one=None)

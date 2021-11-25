@@ -1,4 +1,3 @@
-import sys
 from argparse import Namespace
 import argparse
 from textwrap import dedent
@@ -339,30 +338,30 @@ def example_argument_default(AP):
     yield parser.parse_args([])
 
 
-if sys.version_info >= (3, 5):
-
-    @compare_AP(
-        dedent(
-            """\
-            usage: PROG [-h] [--foobar] [--foonley]
-            PROG: error: unrecognized arguments: --foon
-            """
-        )
+@pytest.mark.skipif("sys.version_info < (3, 5)")
+@compare_AP(
+    dedent(
+        """\
+        usage: PROG [-h] [--foobar] [--foonley]
+        PROG: error: unrecognized arguments: --foon
+        """
     )
-    def example_allow_abbrev(AP, capsys):
-        parser = AP(prog="PROG", allow_abbrev=False)
-        parser.add_argument("--foobar", action="store_true")
-        parser.add_argument("--foonley", action="store_false")
-        with pytest.raises(SystemExit):
-            parser.parse_args(["--foon"])
-        return capsys.readouterr().err
+)
+def example_allow_abbrev(AP, capsys):
+    parser = AP(prog="PROG", allow_abbrev=False)
+    parser.add_argument("--foobar", action="store_true")
+    parser.add_argument("--foonley", action="store_false")
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--foon"])
+    return capsys.readouterr().err
 
-    @compare_AP(Namespace(foobar=False, foonley=False))
-    def example_allow_abbrev_true(AP):
-        parser = AP(prog="PROG", allow_abbrev=True)
-        parser.add_argument("--foobar", action="store_true")
-        parser.add_argument("--foonley", action="store_false")
-        return parser.parse_args(["--foon"])
+
+@compare_AP(Namespace(foobar=False, foonley=False))
+def example_allow_abbrev_true(AP):
+    parser = AP(prog="PROG", allow_abbrev=True)
+    parser.add_argument("--foobar", action="store_true")
+    parser.add_argument("--foonley", action="store_false")
+    return parser.parse_args(["--foon"])
 
 
 @compare_AP(
@@ -438,17 +437,16 @@ def example_add_help_3(AP, capsys):
     return capsys.readouterr().out
 
 
-if sys.version_info >= (3, 9):
-
-    @compare_AP("Catching an argumentError\n")
-    def example_exit_on_error(AP, capsys):
-        parser = AP(exit_on_error=False)
-        parser.add_argument("--integers", type=NegInt)
-        try:
-            parser.parse_args("--integers a".split())
-        except argparse.ArgumentError:
-            print("Catching an argumentError")
-        return capsys.readouterr().out
+@pytest.mark.skipif("sys.version_info < (3, 9)")
+@compare_AP("Catching an argumentError\n")
+def example_exit_on_error(AP, capsys):
+    parser = AP(exit_on_error=False)
+    parser.add_argument("--integers", type=NegInt)
+    try:
+        parser.parse_args("--integers a".split())
+    except argparse.ArgumentError:
+        print("Catching an argumentError")
+    return capsys.readouterr().out
 
 
 @compare_AP(
@@ -526,49 +524,48 @@ def example_add_argument_action_version(AP, capsys):
     return capsys.readouterr().out
 
 
-if sys.version_info >= (3, 8):
+@pytest.mark.skipif("sys.version_info < (3, 8)")
+@compare_AP(Namespace(foo=["f1", "f2", "f3", "f4"]))
+def example_add_argument_action_extend(AP):
+    parser = AP()
+    parser.add_argument("--foo", action="extend", nargs="+", type=str)
+    return parser.parse_args(["--foo", "f1", "--foo", "f2", "f3", "f4"])
 
-    @compare_AP(Namespace(foo=["f1", "f2", "f3", "f4"]))
-    def example_add_argument_action_extend(AP):
-        parser = AP()
-        parser.add_argument("--foo", action="extend", nargs="+", type=str)
-        return parser.parse_args(["--foo", "f1", "--foo", "f2", "f3", "f4"])
+
+@pytest.mark.skipif("sys.version_info < (3, 9)")
+@compare_AP(Namespace(foo=False))
+def example_add_argument_action_BooleanOptionalAction(AP):
+    parser = AP()
+    parser.add_argument("--foo", action=argparse.BooleanOptionalAction)
+    return parser.parse_args(["--no-foo"])
 
 
-if sys.version_info >= (3, 9):
+@compare_AP(
+    dedent(
+        """\
+        Namespace(foo=None, bar=None) '1' None
+        Namespace(foo=None, bar='1') '2' '--foo'
+        """
+    ),
+    Namespace(bar="1", foo="2"),
+)
+def example_add_argument_action_customFooAction(AP, capsys):
+    class FooAction(argparse.Action):
+        def __init__(self, option_strings, dest, nargs=None, **kwargs):
+            if nargs is not None:
+                raise ValueError("nargs not allowed")
+            super().__init__(option_strings, dest, **kwargs)
 
-    @compare_AP(Namespace(foo=False))
-    def example_add_argument_action_BooleanOptionalAction(AP):
-        parser = AP()
-        parser.add_argument("--foo", action=argparse.BooleanOptionalAction)
-        return parser.parse_args(["--no-foo"])
+        def __call__(self, parser, namespace, values, option_string=None):
+            print("%r %r %r" % (namespace, values, option_string))
+            setattr(namespace, self.dest, values)
 
-    @compare_AP(
-        dedent(
-            """\
-                Namespace(foo=None, bar=None) '1' None
-                Namespace(foo=None, bar='1') '2' '--foo'
-                """
-        ),
-        Namespace(bar="1", foo="2"),
-    )
-    def example_add_argument_action_customFooAction(AP, capsys):
-        class FooAction(argparse.Action):
-            def __init__(self, option_strings, dest, nargs=None, **kwargs):
-                if nargs is not None:
-                    raise ValueError("nargs not allowed")
-                super().__init__(option_strings, dest, **kwargs)
-
-            def __call__(self, parser, namespace, values, option_string=None):
-                print("%r %r %r" % (namespace, values, option_string))
-                setattr(namespace, self.dest, values)
-
-        parser = AP()
-        parser.add_argument("--foo", action=FooAction)
-        parser.add_argument("bar", action=FooAction)
-        args = parser.parse_args("1 --foo 2".split())
-        yield capsys.readouterr().out
-        yield args
+    parser = AP()
+    parser.add_argument("--foo", action=FooAction)
+    parser.add_argument("bar", action=FooAction)
+    args = parser.parse_args("1 --foo 2".split())
+    yield capsys.readouterr().out
+    yield args
 
 
 @compare_AP(Namespace(bar=["c"], foo=["a", "b"]))
@@ -940,19 +937,18 @@ def example_parse_known_args(AP):
     return parser.parse_known_args(["--foo", "--badger", "BAR", "spam"])
 
 
-if sys.version_info >= (3, 7):
-
-    @compare_AP(
-        (Namespace(cmd="doit", foo="bar", rest=[1]), ["2", "3"]),
-        Namespace(cmd="doit", foo="bar", rest=[1, 2, 3]),
-    )
-    def example_parse_intermixed_args(AP):
-        parser = AP()
-        parser.add_argument("--foo")
-        parser.add_argument("cmd")
-        parser.add_argument("rest", nargs="*", type=int)
-        yield parser.parse_known_args("doit 1 --foo bar 2 3".split())
-        yield parser.parse_intermixed_args("doit 1 --foo bar 2 3".split())
+@pytest.mark.skipif("sys.version_info < (3, 7)")
+@compare_AP(
+    (Namespace(cmd="doit", foo="bar", rest=[1]), ["2", "3"]),
+    Namespace(cmd="doit", foo="bar", rest=[1, 2, 3]),
+)
+def example_parse_intermixed_args(AP):
+    parser = AP()
+    parser.add_argument("--foo")
+    parser.add_argument("cmd")
+    parser.add_argument("rest", nargs="*", type=int)
+    yield parser.parse_known_args("doit 1 --foo bar 2 3".split())
+    yield parser.parse_intermixed_args("doit 1 --foo bar 2 3".split())
 
 
 # ------------------------------------ End ------------------------------------

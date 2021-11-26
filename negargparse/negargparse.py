@@ -42,7 +42,12 @@ import sys as _sys
 
 import argparse
 from functools import partial
-from typing import Callable, Protocol, Sequence, Type
+from typing import Callable, Sequence, Type
+
+try:
+    from typing import Protocol
+except ImportError:
+    from typing_extensions import Protocol  # type: ignore
 
 
 class Escaper(Protocol):

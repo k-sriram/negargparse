@@ -137,5 +137,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# Since this is a library versions of dependencies should not be locked
-poetry.lock
+# ~~Since this is a library versions of dependencies should not be locked~~
+# Since this project defines the dev/build environment it is better to have
+# consistent environments.
+# poetry.lock

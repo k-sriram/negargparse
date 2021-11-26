@@ -85,10 +85,7 @@ To run extensive tests within isolated environments use `tox`:
 tox
 ```
 
-## [Contributing](./CONTRIBUTING.md)
-
-Looking  to contribute? Check out the [guidelines](./CONTRIBUTING.md). Even otherwise it begins with a section on how to setup the development environment and run tests, for those looking to modify the module for their own purpose.
-
 ## Links
 
 - [Change log](./CHANGELOG.md)
+- [Contributing](./CONTRIBUTING.md)

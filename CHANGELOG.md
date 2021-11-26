@@ -1,7 +1,7 @@
 # Change log
 
-## [0.2.0] - Yet to be released
+## [0.2.0] - 2021-11-27
 
 Initial release
 
-[0.2.0]: https://github.com/k-sriram/negargparse/releses/tag/v0.2.0
+[0.2.0]: https://github.com/k-sriram/negargparse/releses/tag/0.2.0
